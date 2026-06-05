@@ -92,9 +92,17 @@ func _rollout_light(board: Board, color: Stone.Type) -> Stone.Type:
 			if passes >= 2:
 				break
 
-	# 双方 pass 或空位耗尽 → 计分
-	var score: Dictionary = GoScoring.score(board, 7.5)
-	return score["winner"]
+	# 快速评估——棋子数 + 贴目近似（避免 BFS 遍历）
+	var black: int = 0
+	var white: int = 0
+	for row in board.size:
+		for col in board.size:
+			var s: Stone.Type = board.get_stone(row, col)
+			if s == Stone.Type.BLACK:
+				black += 1
+			elif s == Stone.Type.WHITE:
+				white += 1
+	return Stone.Type.BLACK if black > white + 7 else Stone.Type.WHITE
 
 func get_name() -> String:
 	return "MCTS AI"
@@ -124,7 +132,7 @@ class _MctsNode:
 				for col in board.size:
 					if board.get_stone(row, col) == Stone.Type.EMPTY:
 						_untried_moves.append(Vector2i(row, col))
-			_untried_moves.shuffle()
+			# 不需要 shuffle——randi() 已保证随机性
 
 	func _add_child(board: Board, move: Vector2i) -> _MctsNode:
 		var child: _MctsNode = _MctsNode.new(board, move, self)

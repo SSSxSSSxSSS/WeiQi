@@ -208,7 +208,7 @@ func _on_difficulty_hard() -> void:
 
 func _on_difficulty_mcts() -> void:
 	_sound.play_click()
-	_ai = AiMcts.new(200 if _board_size >= 13 else 400)
+	_ai = AiMcts.new(800 if _board_size >= 13 else 2000)
 	_start_game()
 
 func _start_game() -> void:
