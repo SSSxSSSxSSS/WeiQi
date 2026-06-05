@@ -22,7 +22,7 @@ static func score(board: Board, komi: float = 7.5) -> Dictionary:
                 white_score += 1.0
             elif not visited[row][col]:
                 # 找到未访问的空位，BFS 收集整个空域
-                var territory := _flood_fill(board, visited, row, col)
+                var territory: Dictionary = _flood_fill(board, visited, row, col)
                 if territory["owner"] == Stone.Type.BLACK:
                     black_score += territory["size"]
                 elif territory["owner"] == Stone.Type.WHITE:

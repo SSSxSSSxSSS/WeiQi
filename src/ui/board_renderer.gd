@@ -22,7 +22,7 @@ func _ready() -> void:
 	get_tree().root.size_changed.connect(_update_scale_and_position)
 
 func _update_scale_and_position() -> void:
-	var vs := get_viewport().get_visible_rect().size
+	var vs: Vector2 = get_viewport().get_visible_rect().size
 	_scale = minf(vs.x, vs.y) / float(DESIGN_SIZE)
 	_scale = maxf(_scale, 0.5)  # 最小缩放 0.5
 	position = (vs - Vector2(DESIGN_SIZE * _scale, DESIGN_SIZE * _scale)) / 2.0
@@ -40,9 +40,9 @@ func grid_to_pixel(row: int, col: int) -> Vector2:
 
 func pixel_to_grid(screen_pos: Vector2) -> Vector2i:
 	# screen_pos 是 viewport 全局坐标，需减去 Node2D position 再除以缩放
-	var local := (screen_pos - position) / _scale
-	var col := int(round((local.x - BOARD_PADDING) / float(CELL_SIZE)))
-	var row := int(round((local.y - BOARD_PADDING) / float(CELL_SIZE)))
+	var local: Vector2 = (screen_pos - position) / _scale
+	var col: int = int(round((local.x - BOARD_PADDING) / float(CELL_SIZE)))
+	var row: int = int(round((local.y - BOARD_PADDING) / float(CELL_SIZE)))
 	if row < 0 or row >= Board.SIZE or col < 0 or col >= Board.SIZE:
 		return Vector2i(-1, -1)
 	return Vector2i(row, col)
@@ -55,15 +55,15 @@ func _draw() -> void:
 	_draw_last_move_marker()
 
 func _draw_board() -> void:
-	var total_size := BOARD_PADDING * 2 + BOARD_SIZE_PX
+	var total_size: int = BOARD_PADDING * 2 + BOARD_SIZE_PX
 	draw_rect(Rect2(0, 0, total_size, total_size), Color(0.855, 0.722, 0.49))
 	for i in Board.SIZE:
-		var offset := BOARD_PADDING + i * CELL_SIZE
+		var offset: int = BOARD_PADDING + i * CELL_SIZE
 		draw_line(Vector2(BOARD_PADDING, offset), Vector2(BOARD_PADDING + BOARD_SIZE_PX, offset), Color.BLACK, 1.0)
 		draw_line(Vector2(offset, BOARD_PADDING), Vector2(offset, BOARD_PADDING + BOARD_SIZE_PX), Color.BLACK, 1.0)
 
 func _draw_star_points() -> void:
-	var stars := [
+	var stars: Array[Vector2i] = [
 		Vector2i(3,3), Vector2i(3,9), Vector2i(3,15),
 		Vector2i(9,3), Vector2i(9,9), Vector2i(9,15),
 		Vector2i(15,3), Vector2i(15,9), Vector2i(15,15),
@@ -74,10 +74,10 @@ func _draw_star_points() -> void:
 func _draw_stones() -> void:
 	for row in Board.SIZE:
 		for col in Board.SIZE:
-			var stone := _board.get_stone(row, col)
+			var stone: Stone.Type = _board.get_stone(row, col)
 			if stone == Stone.Type.EMPTY:
 				continue
-			var pos := grid_to_pixel(row, col)
+			var pos: Vector2 = grid_to_pixel(row, col)
 			if stone == Stone.Type.BLACK:
 				draw_circle(pos, STONE_RADIUS, Color(0.1, 0.1, 0.1))
 				draw_circle(pos - Vector2(4, 4), 5, Color(0.3, 0.3, 0.3))

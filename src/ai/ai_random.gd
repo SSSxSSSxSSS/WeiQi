@@ -7,9 +7,9 @@ func get_move(board: Board, color: Stone.Type) -> Vector2i:
     var candidates: Array[Vector2i] = []
     for row in Board.SIZE:
         for col in Board.SIZE:
-            var test_board := board.clone()
-            var rules := GoRules.new()
-            var result := rules.play_move(test_board, row, col, color)
+            var test_board: Board = board.clone()
+            var rules: GoRules = GoRules.new()
+            var result: MoveResult = rules.play_move(test_board, row, col, color)
             if result.valid:
                 candidates.append(Vector2i(row, col))
     if candidates.is_empty():
