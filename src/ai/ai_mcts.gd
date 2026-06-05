@@ -111,7 +111,7 @@ class _MctsNode:
 	var _visits: int = 0
 	var _wins: float = 0.0
 
-	func _init(_board: Board, move: Vector2i, parent: _MctsNode) -> void:
+	func _init(board: Board, move: Vector2i, parent: _MctsNode) -> void:
 		_move = move
 		_parent = parent
 		_children = []
