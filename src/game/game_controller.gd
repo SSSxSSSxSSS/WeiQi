@@ -247,6 +247,7 @@ func _on_board_clicked(pos: Vector2) -> void:
 	_sound.play_stone()
 	_board_renderer.set_last_move(grid)
 	_board_renderer.queue_redraw()
+	await get_tree().process_frame  # 先渲染黑棋
 	if _rules.is_game_over(_consecutive_passes):
 		_end_game()
 	else:
@@ -269,8 +270,12 @@ func _enter_ai_turn() -> void:
 	_undo_button.visible = false
 	_hud_label.text = "AI 思考中（%s - %s）..." % [_ai.get_name(), _ai.get_level()]
 	_history.append(_board.clone())
-	await get_tree().process_frame
+	call_deferred("_do_ai_move")
+
+func _do_ai_move() -> void:
 	var move: Vector2i = _ai.get_move(_board, _ai_color)
+	if _state != State.AI_TURN:
+		return
 	if move == Vector2i(-1, -1):
 		_rules.do_pass()
 		_consecutive_passes += 1
