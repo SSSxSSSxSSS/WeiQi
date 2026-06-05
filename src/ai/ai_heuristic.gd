@@ -61,8 +61,23 @@ func get_move(board: Board, color: Stone.Type) -> Vector2i:
 					near_enemy += 1
 			score += near_friend * 3.0
 
+		# ===== 眼检测 + 棋组分析 =====
+		var my_group: Dictionary = StoneGroup.build_group(test_board, Vector2i(row, col))
+		# 四方向己方 → 填眼；四方向敌方 → 送死
+		if near_friend >= 4:
+			score -= 20.0
+		elif near_friend == 3:
+			var mg: Dictionary = StoneGroup.build_group(test_board, Vector2i(row, col))
+			if mg["liberties"].size() <= 2:
+				score -= 15.0
+		if near_enemy >= 4:
+			score -= 25.0
+		# 大棋组气少 → 需要往外扩展
+		if my_group["stones"].size() >= 8 and my_group["liberties"].size() <= 4:
+			if near_friend <= 1 and near_enemy <= 2:
+				score += 6.0
+
 			# ===== 简单前瞻：对方能否提掉我 =====
-			var my_group: Dictionary = StoneGroup.build_group(test_board, Vector2i(row, col))
 			var can_be_captured: bool = my_group["liberties"].size() == 1
 			if can_be_captured:
 				# 检查唯一的气是否会被对方堵住
