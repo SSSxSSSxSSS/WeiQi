@@ -1,0 +1,8 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://src/ui/board_renderer.gd" id="1_v6pxc"]
+
+[node name="root" type="Node2D" unique_id=14475837]
+
+[node name="Board" type="Node2D" parent="." unique_id=1183638212]
+script = ExtResource("1_v6pxc")
