@@ -24,6 +24,7 @@ var _undo_button: Button
 var _history: Array[Board] = []
 var _board_size: int = 19
 var _restart_button: Button
+var _sound: SoundManager
 
 func _ready() -> void:
 	randomize()
@@ -32,6 +33,8 @@ func _ready() -> void:
 	_board_renderer = BoardRenderer.new()
 	add_child(_board_renderer)
 	_board_renderer.board_clicked.connect(_on_board_clicked)
+	_sound = SoundManager.new()
+	add_child(_sound)
 	_create_ui()
 	_center_ui()
 	get_tree().root.size_changed.connect(_center_ui)
@@ -150,11 +153,13 @@ func _enter_color_select() -> void:
 	_hud_label.text = "请选择棋子颜色"
 
 func _on_color_black() -> void:
+	_sound.play_click()
 	_player_color = Stone.Type.BLACK
 	_ai_color = Stone.Type.WHITE
 	_enter_size_select()
 
 func _on_color_white() -> void:
+	_sound.play_click()
 	_player_color = Stone.Type.WHITE
 	_ai_color = Stone.Type.BLACK
 	_enter_size_select()
@@ -166,6 +171,7 @@ func _enter_size_select() -> void:
 	_hud_label.text = "请选择棋盘大小"
 
 func _on_size_selected(sz: int) -> void:
+	_sound.play_click()
 	_board_size = sz
 	_enter_difficulty_select()
 
@@ -176,14 +182,17 @@ func _enter_difficulty_select() -> void:
 	_hud_label.text = "请选择难度"
 
 func _on_difficulty_easy() -> void:
+	_sound.play_click()
 	_ai = AiRandom.new()
 	_start_game()
 
 func _on_difficulty_normal() -> void:
+	_sound.play_click()
 	_ai = AiHeuristic.new(AiHeuristic.Level.NORMAL)
 	_start_game()
 
 func _on_difficulty_hard() -> void:
+	_sound.play_click()
 	_ai = AiHeuristic.new(AiHeuristic.Level.HARD)
 	_start_game()
 
@@ -222,6 +231,7 @@ func _on_board_clicked(pos: Vector2) -> void:
 		_hud_label.text = "无效落子: %s" % result.reason
 		return
 	_consecutive_passes = 0
+	_sound.play_stone()
 	_board_renderer.set_last_move(grid)
 	_board_renderer.queue_redraw()
 	if _rules.is_game_over(_consecutive_passes):
@@ -230,6 +240,7 @@ func _on_board_clicked(pos: Vector2) -> void:
 		_enter_ai_turn()
 
 func _on_player_pass() -> void:
+	_sound.play_click()
 	if _state != State.PLAYER_TURN:
 		return
 	_rules.do_pass()
@@ -270,6 +281,7 @@ func _end_game() -> void:
 	]
 	_game_over_label.visible = true
 	_restart_button.visible = true
+	_sound.play_game_over()
 	_hud_label.text = "游戏结束"
 
 func _on_undo() -> void:
@@ -295,6 +307,7 @@ func _center_ui() -> void:
 	_restart_button.position = Vector2(cx - 80, cy + 40)
 
 func _on_restart() -> void:
+	_sound.play_click()
 	_restart_button.visible = false
 	_game_over_label.visible = false
 	_enter_color_select()
