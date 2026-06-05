@@ -6,16 +6,16 @@ const DEFAULT_SIMULATIONS := 200
 const UCB_C := 1.4
 const ROLLOUT_LIMIT := 80
 
-var _simulations: int
+var simulations: int
 
-func _init(simulations: int = DEFAULT_SIMULATIONS) -> void:
-	_simulations = simulations
+func _init(p_simulations: int = DEFAULT_SIMULATIONS) -> void:
+	simulations = p_simulations
 
 func get_move(board: Board, color: Stone.Type) -> Vector2i:
 	var root: _MctsNode = _MctsNode.new(board, Vector2i(-1, -1), null)
 	var opponent: Stone.Type = Stone.opponent(color)
 
-	for _i in _simulations:
+	for _i in simulations:
 		var node: _MctsNode = root
 		var sim_board: Board = board.clone()
 		var sim_rules: GoRules = GoRules.new()
@@ -100,7 +100,7 @@ func get_name() -> String:
 	return "MCTS AI"
 
 func get_level() -> String:
-	return "MCTS (%d次)" % _simulations
+	return "MCTS (%d次)" % simulations
 
 # ============================================================
 class _MctsNode:

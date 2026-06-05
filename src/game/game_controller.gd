@@ -25,6 +25,8 @@ var _history: Array[Board] = []
 var _board_size: int = 19
 var _restart_button: Button
 var _sound: SoundManager
+var _ai_thread: Thread
+var _ai_move_result: Vector2i
 
 func _ready() -> void:
 	randomize()
@@ -270,10 +272,17 @@ func _enter_ai_turn() -> void:
 	_undo_button.visible = false
 	_hud_label.text = "AI 思考中（%s - %s）..." % [_ai.get_name(), _ai.get_level()]
 	_history.append(_board.clone())
-	call_deferred("_do_ai_move")
+	if _ai is AiMcts:
+		_ai_thread = Thread.new()
+		_ai_thread.start(_thread_compute.bind(_board.clone(), _ai_color, (_ai as AiMcts)._simulations))
+	else:
+		call_deferred("_do_ai_move")
 
 func _do_ai_move() -> void:
 	var move: Vector2i = _ai.get_move(_board, _ai_color)
+	_apply_ai_move(move)
+
+func _apply_ai_move(move: Vector2i) -> void:
 	if _state != State.AI_TURN:
 		return
 	if move == Vector2i(-1, -1):
@@ -288,6 +297,19 @@ func _do_ai_move() -> void:
 		_end_game()
 	else:
 		_enter_player_turn()
+
+## 后台线程：纯计算 MCTS
+func _thread_compute(board: Board, color: Stone.Type, n_simulations: int) -> void:
+	var ai := AiMcts.new(n_simulations)
+	var move := ai.get_move(board, color)
+	call_deferred("_on_ai_done", move)
+
+## 主线程回调：线程计算完成
+func _on_ai_done(move: Vector2i) -> void:
+	if _ai_thread:
+		_ai_thread.wait_to_finish()
+		_ai_thread = null
+	_apply_ai_move(move)
 
 func _end_game() -> void:
 	_state = State.GAME_OVER
