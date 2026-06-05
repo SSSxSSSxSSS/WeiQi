@@ -64,35 +64,36 @@ func get_move(board: Board, color: Stone.Type) -> Vector2i:
 ## 轻量随机模拟——随机选空位落子
 func _rollout_light(board: Board, color: Stone.Type) -> Stone.Type:
 	var rules := GoRules.new()
-	var empty_spots: Array[Vector2i] = []
+	var spots: Array[Vector2i] = []
+	# 收集空位
 	for row in board.size:
 		for col in board.size:
 			if board.get_stone(row, col) == Stone.Type.EMPTY:
-				empty_spots.append(Vector2i(row, col))
+				spots.append(Vector2i(row, col))
 
 	var passes := 0
-	for _step in ROLLOUT_LIMIT:
-		empty_spots.clear()
-		for row in board.size:
-			for col in board.size:
-				if board.get_stone(row, col) == Stone.Type.EMPTY:
-					empty_spots.append(Vector2i(row, col))
+	var tried: int = 0
+	var max_tries: int = min(spots.size(), ROLLOUT_LIMIT)
 
-		if empty_spots.is_empty():
-			rules.do_pass()
+	while spots.size() > 0 and tried < max_tries:
+		var idx: int = randi() % spots.size()
+		var move: Vector2i = spots[idx]
+		# swap-remove: O(1)
+		spots[idx] = spots[spots.size() - 1]
+		spots.remove_at(spots.size() - 1)
+		tried += 1
+
+		var r: MoveResult = rules.play_move(board, move.x, move.y, color)
+		if r.valid:
+			color = Stone.opponent(color)
+			passes = 0
+		else:
 			passes += 1
 			if passes >= 2:
 				break
-			color = Stone.opponent(color)
-			continue
-		passes = 0
 
-		var move := empty_spots[randi() % empty_spots.size()]
-		var r := rules.play_move(board, move.x, move.y, color)
-		if r.valid:
-			color = Stone.opponent(color)
-
-	var score := GoScoring.score(board, 7.5)
+	# 双方 pass 或空位耗尽 → 计分
+	var score: Dictionary = GoScoring.score(board, 7.5)
 	return score["winner"]
 
 func get_name() -> String:
