@@ -13,6 +13,15 @@ var _last_move: Vector2i = Vector2i(-1, -1)
 func _init() -> void:
     _board = Board.new()
 
+func _ready() -> void:
+    _center_board()
+
+## 让棋盘在视窗中居中
+func _center_board() -> void:
+    var viewport_size := get_viewport().get_visible_rect().size
+    var total_size := BOARD_PADDING * 2 + BOARD_SIZE_PX
+    position = (viewport_size - Vector2(total_size, total_size)) / 2.0
+
 ## 绑定棋盘数据
 func set_board(board: Board) -> void:
     _board = board
