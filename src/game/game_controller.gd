@@ -21,6 +21,7 @@ var _game_over_label: Label
 var _pass_button: Button
 
 func _ready() -> void:
+    randomize()
     _board = Board.new()
     _rules = GoRules.new()
     _board_renderer = BoardRenderer.new()
