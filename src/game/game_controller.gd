@@ -1,6 +1,6 @@
 # src/game/game_controller.gd
 class_name GameController
-extends Node
+extends Control
 
 enum State { COLOR_SELECT, DIFFICULTY_SELECT, PLAYER_TURN, AI_TURN, GAME_OVER }
 
