@@ -101,3 +101,39 @@ func test_capture_multiple_groups():
     var result = rules.play_move(board, 2, 2, Stone.Type.BLACK)
     assert_true(result.valid)
     assert_eq(result.captured.size(), 2)
+
+# ------------------------------------------------------------
+# 测试 6: 单纯自杀——落入被对方包围的空位且无法提子
+#
+# 场景：Given  空位 (3,3) 上下左右全是白子
+#        When   黑方在 (3,3) 落子（落子后黑子四面被围、无气）
+#        Then   返回 valid=false，reason="suicide"
+# ------------------------------------------------------------
+func test_suicide_is_invalid():
+    var board = Board.new()
+    board.set_stone(2, 3, Stone.Type.WHITE)  # 上
+    board.set_stone(4, 3, Stone.Type.WHITE)  # 下
+    board.set_stone(3, 2, Stone.Type.WHITE)  # 左
+    board.set_stone(3, 4, Stone.Type.WHITE)  # 右
+    var rules = GoRules.new()
+    var result = rules.play_move(board, 3, 3, Stone.Type.BLACK)
+    assert_false(result.valid)
+    assert_eq(result.reason, "suicide")
+
+# ------------------------------------------------------------
+# 测试 7: 提子后不死——看似自杀但能提对方子让自己有气
+#
+# 场景：Given  白子 (1,2) 被三黑包围只剩一口气在 (0,2)
+#        When   黑方在 (0,2) 落子，虽落子位置被围但提掉 (1,2) 后自己有了气
+#        Then   返回 valid=true（不是自杀）
+# ------------------------------------------------------------
+func test_not_suicide_if_can_capture():
+    var board = Board.new()
+    # 白子 (1,2) 只剩一口气在 (0,2)
+    board.set_stone(1, 2, Stone.Type.WHITE)
+    board.set_stone(1, 1, Stone.Type.BLACK)
+    board.set_stone(1, 3, Stone.Type.BLACK)
+    board.set_stone(2, 2, Stone.Type.BLACK)
+    var rules = GoRules.new()
+    var result = rules.play_move(board, 0, 2, Stone.Type.BLACK)
+    assert_true(result.valid)
