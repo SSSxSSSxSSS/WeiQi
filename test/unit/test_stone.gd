@@ -1,8 +1,6 @@
 # test/unit/test_stone.gd
 extends GutTest
 
-const Stone = preload("res://src/core/stone.gd")
-
 # ============================================================
 # 任务 1.1 — Stone 枚举 行为规格
 # ============================================================
@@ -28,7 +26,7 @@ const Stone = preload("res://src/core/stone.gd")
 # 这是 opponent() 最基本的功能——黑白互转。
 # ------------------------------------------------------------
 func test_opponent_black_returns_white():
-    assert_eq(Stone.opponent(Stone.Type.BLACK), Stone.Type.WHITE)
+	assert_eq(Stone.opponent(Stone.Type.BLACK), Stone.Type.WHITE)
 
 # ------------------------------------------------------------
 # 测试 2: 白棋的对手是黑棋
@@ -40,7 +38,7 @@ func test_opponent_black_returns_white():
 # 对称验证——两个方向都要对。
 # ------------------------------------------------------------
 func test_opponent_white_returns_black():
-    assert_eq(Stone.opponent(Stone.Type.WHITE), Stone.Type.BLACK)
+	assert_eq(Stone.opponent(Stone.Type.WHITE), Stone.Type.BLACK)
 
 # ------------------------------------------------------------
 # 测试 3: 空位的对手还是空位
@@ -52,4 +50,4 @@ func test_opponent_white_returns_black():
 # 边界情况——空位置没有对手，返回自身，避免下游代码出错。
 # ------------------------------------------------------------
 func test_opponent_empty_returns_empty():
-    assert_eq(Stone.opponent(Stone.Type.EMPTY), Stone.Type.EMPTY)
+	assert_eq(Stone.opponent(Stone.Type.EMPTY), Stone.Type.EMPTY)

@@ -1,8 +1,6 @@
 # test/unit/test_board.gd
 extends GutTest
 
-const Board = preload("res://src/core/board.gd")
-
 # ============================================================
 # 任务 1.2 — Board 棋盘类 行为规格
 # ============================================================
@@ -28,11 +26,11 @@ const Board = preload("res://src/core/board.gd")
 # 这是棋盘最基本的保证——不能让任何位置有初始脏数据。
 # ------------------------------------------------------------
 func test_board_init_all_empty():
-    var board = Board.new()
-    for row in Board.SIZE:
-        for col in Board.SIZE:
-            assert_eq(board.get_stone(row, col), Stone.Type.EMPTY,
-                "位置 (%d,%d) 应为空" % [row, col])
+	var board = Board.new()
+	for row in Board.SIZE:
+		for col in Board.SIZE:
+			assert_eq(board.get_stone(row, col), Stone.Type.EMPTY,
+				"位置 (%d,%d) 应为空" % [row, col])
 
 # ------------------------------------------------------------
 # 测试 2: 放置与读取棋子
@@ -44,12 +42,12 @@ func test_board_init_all_empty():
 # 验证 set/get 正确性——放哪读哪，不污染其他位置。
 # ------------------------------------------------------------
 func test_set_and_get_stone():
-    var board = Board.new()
-    board.set_stone(3, 3, Stone.Type.BLACK)
-    assert_eq(board.get_stone(3, 3), Stone.Type.BLACK)
-    # 其他位置不受影响
-    assert_eq(board.get_stone(0, 0), Stone.Type.EMPTY)
-    assert_eq(board.get_stone(18, 18), Stone.Type.EMPTY)
+	var board = Board.new()
+	board.set_stone(3, 3, Stone.Type.BLACK)
+	assert_eq(board.get_stone(3, 3), Stone.Type.BLACK)
+	# 其他位置不受影响
+	assert_eq(board.get_stone(0, 0), Stone.Type.EMPTY)
+	assert_eq(board.get_stone(18, 18), Stone.Type.EMPTY)
 
 # ------------------------------------------------------------
 # 测试 3: 越界检测
@@ -61,14 +59,14 @@ func test_set_and_get_stone():
 # 边界判断是防崩溃的第一道防线——所有涉及坐标的方法都会用到它。
 # ------------------------------------------------------------
 func test_is_on_board_rejects_out_of_bounds():
-    var board = Board.new()
-    assert_false(board.is_on_board(-1, 0), "(-1,0) 越界")
-    assert_false(board.is_on_board(19, 0), "(19,0) 越界")
-    assert_false(board.is_on_board(0, -1), "(0,-1) 越界")
-    assert_false(board.is_on_board(0, 19), "(0,19) 越界")
-    # 边界内应该通过
-    assert_true(board.is_on_board(0, 0), "(0,0) 在界内")
-    assert_true(board.is_on_board(18, 18), "(18,18) 在界内")
+	var board = Board.new()
+	assert_false(board.is_on_board(-1, 0), "(-1,0) 越界")
+	assert_false(board.is_on_board(19, 0), "(19,0) 越界")
+	assert_false(board.is_on_board(0, -1), "(0,-1) 越界")
+	assert_false(board.is_on_board(0, 19), "(0,19) 越界")
+	# 边界内应该通过
+	assert_true(board.is_on_board(0, 0), "(0,0) 在界内")
+	assert_true(board.is_on_board(18, 18), "(18,18) 在界内")
 
 # ------------------------------------------------------------
 # 测试 4: 角落坐标只有两个邻居
@@ -80,17 +78,17 @@ func test_is_on_board_rejects_out_of_bounds():
 # 邻居坐标不包括越界方向——这是棋组 BFS 的基础。
 # ------------------------------------------------------------
 func test_get_neighbors_corner_only_two():
-    var board = Board.new()
-    var neighbors = board.get_neighbors(0, 0)
-    assert_eq(neighbors.size(), 2, "角落应只有 2 个邻居")
-    # 包含 (1,0) 和 (0,1)，不包含越界的 (-1,0) 和 (0,-1)
-    var has_down = false
-    var has_right = false
-    for n in neighbors:
-        if n == Vector2i(1, 0): has_down = true
-        if n == Vector2i(0, 1): has_right = true
-    assert_true(has_down, "应包含 (1,0)")
-    assert_true(has_right, "应包含 (0,1)")
+	var board = Board.new()
+	var neighbors = board.get_neighbors(0, 0)
+	assert_eq(neighbors.size(), 2, "角落应只有 2 个邻居")
+	# 包含 (1,0) 和 (0,1)，不包含越界的 (-1,0) 和 (0,-1)
+	var has_down = false
+	var has_right = false
+	for n in neighbors:
+		if n == Vector2i(1, 0): has_down = true
+		if n == Vector2i(0, 1): has_right = true
+	assert_true(has_down, "应包含 (1,0)")
+	assert_true(has_right, "应包含 (0,1)")
 
 # ------------------------------------------------------------
 # 测试 5: 深拷贝——修改副本不影响原棋盘
@@ -105,13 +103,13 @@ func test_get_neighbors_corner_only_two():
 # 如果浅拷贝了，AI 模拟和劫检测都会静默出错。
 # ------------------------------------------------------------
 func test_clone_is_deep_copy():
-    var board_a = Board.new()
-    board_a.set_stone(5, 5, Stone.Type.BLACK)
-    var board_b = board_a.clone()
-    # 克隆的值相同
-    assert_eq(board_b.get_stone(5, 5), Stone.Type.BLACK)
-    # 修改克隆不影响原棋盘
-    board_b.set_stone(5, 5, Stone.Type.WHITE)
-    assert_eq(board_a.get_stone(5, 5), Stone.Type.BLACK,
-        "深拷贝：修改副本不应影响原棋盘")
-    assert_eq(board_b.get_stone(5, 5), Stone.Type.WHITE)
+	var board_a = Board.new()
+	board_a.set_stone(5, 5, Stone.Type.BLACK)
+	var board_b = board_a.clone()
+	# 克隆的值相同
+	assert_eq(board_b.get_stone(5, 5), Stone.Type.BLACK)
+	# 修改克隆不影响原棋盘
+	board_b.set_stone(5, 5, Stone.Type.WHITE)
+	assert_eq(board_a.get_stone(5, 5), Stone.Type.BLACK,
+		"深拷贝：修改副本不应影响原棋盘")
+	assert_eq(board_b.get_stone(5, 5), Stone.Type.WHITE)
