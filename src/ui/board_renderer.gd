@@ -10,6 +10,8 @@ const BOARD_SIZE_PX := CELL_SIZE * (Board.SIZE - 1)
 var _board: Board
 var _last_move: Vector2i = Vector2i(-1, -1)
 
+signal board_clicked(screen_pos: Vector2)
+
 func _init() -> void:
     _board = Board.new()
 
@@ -94,3 +96,7 @@ func _draw_last_move_marker() -> void:
         return
     var pos := grid_to_pixel(_last_move.x, _last_move.y)
     draw_circle(pos, 5, Color.RED)
+
+func _input(event: InputEvent) -> void:
+    if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+        board_clicked.emit(event.position)
