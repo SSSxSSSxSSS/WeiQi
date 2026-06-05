@@ -2,7 +2,7 @@
 class_name GameController
 extends Control
 
-enum State { COLOR_SELECT, DIFFICULTY_SELECT, PLAYER_TURN, AI_TURN, GAME_OVER }
+enum State { COLOR_SELECT, SIZE_SELECT, DIFFICULTY_SELECT, PLAYER_TURN, AI_TURN, GAME_OVER }
 
 var _state: State = State.COLOR_SELECT
 var _board: Board
@@ -15,10 +15,14 @@ var _komi: float = 7.5
 
 var _board_renderer: BoardRenderer
 var _color_panel: Panel
+var _size_panel: Panel
 var _difficulty_panel: Panel
 var _hud_label: Label
 var _game_over_label: Label
 var _pass_button: Button
+var _undo_button: Button
+var _history: Array[Board] = []
+var _board_size: int = 19
 
 func _ready() -> void:
     randomize()
@@ -65,6 +69,21 @@ func _create_ui() -> void:
     white_btn.pressed.connect(_on_color_white)
     _color_panel.add_child(white_btn)
 
+    # 棋盘尺寸选择面板（初始隐藏）
+    _size_panel = Panel.new()
+    _size_panel.position = Vector2(280, 300)
+    _size_panel.size = Vector2(200, 155)
+    _size_panel.visible = false
+    add_child(_size_panel)
+
+    for size in [9, 13, 19]:
+        var btn: Button = Button.new()
+        btn.text = "%d × %d" % [size, size]
+        btn.position = Vector2(20, 20 + (_size_panel.get_child_count() * 40))
+        btn.size = Vector2(160, 35)
+        btn.pressed.connect(_on_size_selected.bind(size))
+        _size_panel.add_child(btn)
+
     # 难度选择面板（初始隐藏）
     _difficulty_panel = Panel.new()
     _difficulty_panel.position = Vector2(280, 300)
@@ -102,6 +121,15 @@ func _create_ui() -> void:
     _pass_button.pressed.connect(_on_player_pass)
     add_child(_pass_button)
 
+    # 悔棋按钮（初始隐藏）
+    _undo_button = Button.new()
+    _undo_button.text = "悔棋"
+    _undo_button.position = Vector2(890, 10)
+    _undo_button.size = Vector2(80, 35)
+    _undo_button.visible = false
+    _undo_button.pressed.connect(_on_undo)
+    add_child(_undo_button)
+
 func _enter_color_select() -> void:
     _state = State.COLOR_SELECT
     _color_panel.visible = true
@@ -112,11 +140,21 @@ func _enter_color_select() -> void:
 func _on_color_black() -> void:
     _player_color = Stone.Type.BLACK
     _ai_color = Stone.Type.WHITE
-    _enter_difficulty_select()
+    _enter_size_select()
 
 func _on_color_white() -> void:
     _player_color = Stone.Type.WHITE
     _ai_color = Stone.Type.BLACK
+    _enter_size_select()
+
+func _enter_size_select() -> void:
+    _state = State.SIZE_SELECT
+    _color_panel.visible = false
+    _size_panel.visible = true
+    _hud_label.text = "请选择棋盘大小"
+
+func _on_size_selected(size: int) -> void:
+    _board_size = size
     _enter_difficulty_select()
 
 func _enter_difficulty_select() -> void:
@@ -139,9 +177,13 @@ func _on_difficulty_hard() -> void:
 
 func _start_game() -> void:
     _difficulty_panel.visible = false
+    _board = Board.new(_board_size)
+    _rules = GoRules.new()
+    _history.clear()
     _consecutive_passes = 0
     _board_renderer.set_board(_board)
     _pass_button.visible = true
+    _undo_button.visible = true
     _update_hud()
     if _player_color == Stone.Type.BLACK:
         _enter_player_turn()
@@ -151,6 +193,7 @@ func _start_game() -> void:
 func _enter_player_turn() -> void:
     _state = State.PLAYER_TURN
     _pass_button.visible = true
+    _undo_button.visible = not _history.is_empty()
     _hud_label.text = "你的回合（%s）" % ("黑棋" if _player_color == Stone.Type.BLACK else "白棋")
 
 func _on_board_clicked(pos: Vector2) -> void:
@@ -159,8 +202,10 @@ func _on_board_clicked(pos: Vector2) -> void:
     var grid: Vector2i = _board_renderer.pixel_to_grid(pos)
     if grid == Vector2i(-1, -1):
         return
+    _history.append(_board.clone())
     var result: MoveResult = _rules.play_move(_board, grid.x, grid.y, _player_color)
     if not result.valid:
+        _history.pop_back()
         _hud_label.text = "无效落子: %s" % result.reason
         return
     _consecutive_passes = 0
@@ -184,7 +229,9 @@ func _on_player_pass() -> void:
 func _enter_ai_turn() -> void:
     _state = State.AI_TURN
     _pass_button.visible = false
+    _undo_button.visible = false
     _hud_label.text = "AI 思考中（%s - %s）..." % [_ai.get_name(), _ai.get_level()]
+    _history.append(_board.clone())
     await get_tree().process_frame
     var move: Vector2i = _ai.get_move(_board, _ai_color)
     if move == Vector2i(-1, -1):
@@ -210,6 +257,17 @@ func _end_game() -> void:
     ]
     _game_over_label.visible = true
     _hud_label.text = "游戏结束"
+
+func _on_undo() -> void:
+    if _state != State.PLAYER_TURN or _history.is_empty():
+        return
+    _board = _history.pop_back()
+    _rules = GoRules.new()  # 重置规则状态
+    _board_renderer.set_board(_board)
+    _board_renderer.set_last_move(Vector2i(-1, -1))
+    _board_renderer.queue_redraw()
+    _undo_button.visible = not _history.is_empty()
+    _hud_label.text = "已悔棋"
 
 func _update_hud() -> void:
     _hud_label.text = "%s - %s 难度" % [

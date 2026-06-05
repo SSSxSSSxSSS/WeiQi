@@ -11,9 +11,9 @@ static func build_group(board: Board, seed_pos: Vector2i) -> Dictionary:
 
 	# visited 二维数组：记录已访问位置
 	var visited: Array[Array] = []
-	for row in Board.SIZE:
+	for row in board.size:
 		visited.append([])
-		for _col in Board.SIZE:
+		for _col in board.size:
 			visited[row].append(false)
 
 	var queue: Array[Vector2i] = [seed_pos]
