@@ -17,6 +17,7 @@ func _init() -> void:
 
 func _ready() -> void:
 	_center_board()
+	get_tree().root.size_changed.connect(_center_board)
 
 ## 让棋盘在视窗中居中
 func _center_board() -> void:
