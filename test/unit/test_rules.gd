@@ -57,3 +57,47 @@ func test_play_out_of_bounds_is_invalid():
     var rules = GoRules.new()
     var result = rules.play_move(board, -1, 0, Stone.Type.BLACK)
     assert_false(result.valid)
+
+# ------------------------------------------------------------
+# 测试 4: 单子被提——堵住对方最后一口气，对方棋子被移除
+#
+# 场景：Given  白子 (2,3) 只剩一口气在 (1,3)，其余三面被黑子包围
+#        When   黑方在 (1,3) 落子堵住最后一口气
+#        Then   返回 valid=true，白子 (2,3) 从棋盘移除，captured 包含 [(2,3)]
+# ------------------------------------------------------------
+func test_capture_single_stone():
+    var board = Board.new()
+    board.set_stone(2, 3, Stone.Type.WHITE)
+    board.set_stone(2, 2, Stone.Type.BLACK)
+    board.set_stone(2, 4, Stone.Type.BLACK)
+    board.set_stone(3, 3, Stone.Type.BLACK)
+    var rules = GoRules.new()
+    var result = rules.play_move(board, 1, 3, Stone.Type.BLACK)
+    assert_true(result.valid)
+    assert_eq(result.captured.size(), 1)
+    assert_eq(board.get_stone(2, 3), Stone.Type.EMPTY, "白子应被移除")
+
+# ------------------------------------------------------------
+# 测试 5: 同时提掉多组——一次落子让对方多个棋组同时无气
+#
+# 场景：Given  两枚白子分别在 (2,3) 和 (4,3)，各自只剩一口气
+#        When   黑方落子同时堵住两口气
+#        Then   captured 包含两枚白子坐标
+# ------------------------------------------------------------
+func test_capture_multiple_groups():
+    var board = Board.new()
+    # 白子 (2,1)：被 (1,1)(3,1)(2,0) 三黑包围，只剩一口气在 (2,2)
+    board.set_stone(2, 1, Stone.Type.WHITE)
+    board.set_stone(1, 1, Stone.Type.BLACK)
+    board.set_stone(3, 1, Stone.Type.BLACK)
+    board.set_stone(2, 0, Stone.Type.BLACK)
+    # 白子 (2,3)：被 (1,3)(3,3)(2,4) 三黑包围，只剩一口气在 (2,2)
+    board.set_stone(2, 3, Stone.Type.WHITE)
+    board.set_stone(1, 3, Stone.Type.BLACK)
+    board.set_stone(3, 3, Stone.Type.BLACK)
+    board.set_stone(2, 4, Stone.Type.BLACK)
+    # 两个白子共享仅剩的气 (2,2)
+    var rules = GoRules.new()
+    var result = rules.play_move(board, 2, 2, Stone.Type.BLACK)
+    assert_true(result.valid)
+    assert_eq(result.captured.size(), 2)

@@ -14,4 +14,16 @@ func play_move(board: Board, row: int, col: int, color: Stone.Type) -> MoveResul
         return MoveResult.new(false, [], "occupied")
     # 落子
     board.set_stone(row, col, color)
-    return MoveResult.new(true, [], "")
+    var captured: Array[Vector2i] = []
+
+    # 提子：检查四方向邻居，对方棋组无气则移除
+    for nb in board.get_neighbors(row, col):
+        var nb_stone: Stone.Type = board.get_stone(nb.x, nb.y)
+        if nb_stone != Stone.Type.EMPTY and nb_stone != color:
+            var group: Dictionary = StoneGroup.build_group(board, nb)
+            if group["liberties"].size() == 0:
+                for s in group["stones"]:
+                    board.set_stone(s.x, s.y, Stone.Type.EMPTY)
+                    captured.append(s)
+
+    return MoveResult.new(true, captured, "")
