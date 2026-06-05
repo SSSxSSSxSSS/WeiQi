@@ -30,8 +30,8 @@ func play_game_over() -> void:
 	_play_tone(660.0, 0.12, 0.5)
 
 func _play_tone(freq: float, duration: float, volume: float) -> void:
-	var g := _generator as AudioStreamGenerator
-	var pb := g.get_playback()
+	var g: AudioStreamGenerator = _generator as AudioStreamGenerator
+	var pb: AudioStreamGeneratorPlayback = g.get_playback()
 	if pb == null:
 		return
 	var buf := PackedVector2Array()
