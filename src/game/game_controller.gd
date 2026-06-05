@@ -98,28 +98,28 @@ func _create_ui() -> void:
 	add_child(_difficulty_panel)
 
 	var easy_btn: Button = Button.new()
-	easy_btn.text = "简单（随机）"
+	easy_btn.text = "简单"
 	easy_btn.position = Vector2(20, 20)
 	easy_btn.size = Vector2(160, 35)
 	easy_btn.pressed.connect(_on_difficulty_easy)
 	_difficulty_panel.add_child(easy_btn)
 
 	var normal_btn: Button = Button.new()
-	normal_btn.text = "普通（启发式）"
+	normal_btn.text = "普通"
 	normal_btn.position = Vector2(20, 60)
 	normal_btn.size = Vector2(160, 35)
 	normal_btn.pressed.connect(_on_difficulty_normal)
 	_difficulty_panel.add_child(normal_btn)
 
 	var hard_btn: Button = Button.new()
-	hard_btn.text = "困难（启发式+）"
+	hard_btn.text = "困难"
 	hard_btn.position = Vector2(20, 100)
 	hard_btn.size = Vector2(160, 35)
 	hard_btn.pressed.connect(_on_difficulty_hard)
 	_difficulty_panel.add_child(hard_btn)
 
 	var mcts_btn: Button = Button.new()
-	mcts_btn.text = "困难+（MCTS）"
+	mcts_btn.text = "困难+"
 	mcts_btn.position = Vector2(20, 140)
 	mcts_btn.size = Vector2(160, 35)
 	mcts_btn.pressed.connect(_on_difficulty_mcts)
@@ -206,7 +206,7 @@ func _on_difficulty_hard() -> void:
 
 func _on_difficulty_mcts() -> void:
 	_sound.play_click()
-	_ai = AiMcts.new(500 if _board_size >= 13 else 1000)
+	_ai = AiMcts.new(200 if _board_size >= 13 else 400)
 	_start_game()
 
 func _start_game() -> void:

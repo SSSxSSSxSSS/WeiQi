@@ -1,7 +1,7 @@
-[gd_scene format=3]
+[gd_scene format=3 uid="uid://dwj8wjc20ee5e"]
 
-[ext_resource type="Script" path="res://src/ui/board_renderer.gd" id="1_g0snu"]
-[ext_resource type="Script" path="res://src/game/game_controller.gd" id="2_game_ctrl"]
+[ext_resource type="Script" uid="uid://s8o7bkuegiqk" path="res://src/ui/board_renderer.gd" id="1_g0snu"]
+[ext_resource type="Script" uid="uid://bs1u711w1fii0" path="res://src/game/game_controller.gd" id="2_game_ctrl"]
 
 [node name="root" type="Node2D" unique_id=2010308247]
 
@@ -9,10 +9,10 @@
 script = ExtResource("1_g0snu")
 
 [node name="GameController" type="Control" parent="." unique_id=1143747780]
-script = ExtResource("2_game_ctrl")
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("2_game_ctrl")

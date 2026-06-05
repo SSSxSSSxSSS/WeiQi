@@ -2,20 +2,18 @@
 class_name AiMcts
 extends AiBase
 
-const DEFAULT_SIMULATIONS := 300
+const DEFAULT_SIMULATIONS := 200
 const UCB_C := 1.4
+const ROLLOUT_LIMIT := 80
 
 var _simulations: int
-var _rules: GoRules
-var _my_color: Stone.Type
 
 func _init(simulations: int = DEFAULT_SIMULATIONS) -> void:
 	_simulations = simulations
-	_rules = GoRules.new()
 
 func get_move(board: Board, color: Stone.Type) -> Vector2i:
-	_my_color = color
 	var root: _MctsNode = _MctsNode.new(board, Vector2i(-1, -1), null)
+	var opponent: Stone.Type = Stone.opponent(color)
 
 	for _i in _simulations:
 		var node: _MctsNode = root
@@ -29,26 +27,25 @@ func get_move(board: Board, color: Stone.Type) -> Vector2i:
 			sim_rules.play_move(sim_board, node._move.x, node._move.y, sim_color)
 			sim_color = Stone.opponent(sim_color)
 
-		# 2. Expansion: 展开一个未尝试的走法
+		# 2. Expansion
 		if not node._untried_moves.is_empty():
 			var idx: int = randi() % node._untried_moves.size()
 			var move: Vector2i = node._untried_moves[idx]
 			node._untried_moves.remove_at(idx)
-			sim_rules.play_move(sim_board, move.x, move.y, sim_color)
-			sim_color = Stone.opponent(sim_color)
-			node = node._add_child(sim_board, move)
+			var r: MoveResult = sim_rules.play_move(sim_board, move.x, move.y, sim_color)
+			if r.valid:
+				sim_color = Stone.opponent(sim_color)
+				node = node._add_child(sim_board, move)
 
-		# 3. Simulation: 随机下到底
-		sim_color = _rollout(sim_board, sim_rules, sim_color)
+		# 3. Simulation: 轻量随机下到底
+		var winner: Stone.Type = _rollout_light(sim_board, sim_color)
 
-		# 4. Backpropagation: 回传结果
-		var result: float = 0.0
-		if sim_color == color:
-			result = 1.0  # 我方胜利
-		elif sim_color == Stone.opponent(color):
-			result = 0.0  # 对方胜利
-		else:
-			result = 0.5  # 平局
+		# 4. Backpropagation
+		var result: float = 0.5
+		if winner == color:
+			result = 1.0
+		elif winner == opponent:
+			result = 0.0
 		while node != null:
 			node._visits += 1
 			node._wins += result
@@ -58,58 +55,52 @@ func get_move(board: Board, color: Stone.Type) -> Vector2i:
 	if root._children.is_empty():
 		return Vector2i(-1, -1)
 
-	# 选访问次数最多的子节点
 	var best: _MctsNode = root._children[0]
 	for c in root._children:
 		if c._visits > best._visits:
 			best = c
 	return best._move
 
-## 随机模拟到终局（最多 step_limit 步）
-func _rollout(board: Board, rules: GoRules, color: Stone.Type, step_limit: int = 200) -> Stone.Type:
-	var steps: int = 0
-	var opponent: Stone.Type = Stone.opponent(color)
-	# 先用启发式策略收集合法走法（比纯随机快）
-	while steps < step_limit:
-		var candidates: Array[Vector2i] = []
+## 轻量随机模拟——随机选空位落子
+func _rollout_light(board: Board, color: Stone.Type) -> Stone.Type:
+	var rules := GoRules.new()
+	var empty_spots: Array[Vector2i] = []
+	for row in board.size:
+		for col in board.size:
+			if board.get_stone(row, col) == Stone.Type.EMPTY:
+				empty_spots.append(Vector2i(row, col))
+
+	var passes := 0
+	for _step in ROLLOUT_LIMIT:
+		empty_spots.clear()
 		for row in board.size:
 			for col in board.size:
-				var test_board: Board = board.clone()
-				var test_rules: GoRules = GoRules.new()
-				var r: MoveResult = test_rules.play_move(test_board, row, col, color)
-				if r.valid:
-					candidates.append(Vector2i(row, col))
-		if candidates.is_empty():
+				if board.get_stone(row, col) == Stone.Type.EMPTY:
+					empty_spots.append(Vector2i(row, col))
+
+		if empty_spots.is_empty():
 			rules.do_pass()
-			opponent = Stone.opponent(opponent)
-			color = opponent
-			# 连续的 pass
-			if steps > 0 and candidates.is_empty():
+			passes += 1
+			if passes >= 2:
 				break
-		else:
-			var move: Vector2i = candidates[randi() % candidates.size()]
-			rules.play_move(board, move.x, move.y, color)
-			color = opponent
-			opponent = Stone.opponent(opponent)
-		steps += 1
-		if steps > step_limit - 1:
-			break
-	# 用中国规则判定胜负
-	var score: Dictionary = GoScoring.score(board, 7.5)
-	if score["winner"] == Stone.Type.BLACK:
-		return Stone.Type.BLACK
-	elif score["winner"] == Stone.Type.WHITE:
-		return Stone.Type.WHITE
-	return Stone.Type.EMPTY
+			color = Stone.opponent(color)
+			continue
+		passes = 0
+
+		var move := empty_spots[randi() % empty_spots.size()]
+		var r := rules.play_move(board, move.x, move.y, color)
+		if r.valid:
+			color = Stone.opponent(color)
+
+	var score := GoScoring.score(board, 7.5)
+	return score["winner"]
 
 func get_name() -> String:
 	return "MCTS AI"
 
 func get_level() -> String:
-	return "困难+ (%d)" % _simulations
+	return "MCTS (%d次)" % _simulations
 
-# ============================================================
-# 内部类：MCTS 节点
 # ============================================================
 class _MctsNode:
 	var _board: Board
@@ -121,23 +112,19 @@ class _MctsNode:
 	var _wins: float = 0.0
 
 	func _init(board: Board, move: Vector2i, parent: _MctsNode) -> void:
-		_board = board.clone() if board else null
 		_move = move
 		_parent = parent
 		_children = []
-		_untried_moves = _collect_moves(board)
+		_untried_moves = []
 		_visits = 0
 		_wins = 0.0
-
-	func _collect_moves(board: Board) -> Array[Vector2i]:
-		var moves: Array[Vector2i] = []
-		if board == null:
-			return moves
-		for row in board.size:
-			for col in board.size:
-				moves.append(Vector2i(row, col))
-		moves.shuffle()
-		return moves
+		# 只收集空位
+		if board != null:
+			for row in board.size:
+				for col in board.size:
+					if board.get_stone(row, col) == Stone.Type.EMPTY:
+						_untried_moves.append(Vector2i(row, col))
+			_untried_moves.shuffle()
 
 	func _add_child(board: Board, move: Vector2i) -> _MctsNode:
 		var child: _MctsNode = _MctsNode.new(board, move, self)
