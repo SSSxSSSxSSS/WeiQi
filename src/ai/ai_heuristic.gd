@@ -12,12 +12,12 @@ func _init(level: Level = Level.NORMAL) -> void:
 ## 对所有合法落子打分，返回最高分位置
 func get_move(board: Board, color: Stone.Type) -> Vector2i:
     var candidates: Array[Dictionary] = []  # [{pos, score}]
-    var rules := GoRules.new()
     var opponent := Stone.opponent(color)
 
     for row in Board.SIZE:
         for col in Board.SIZE:
             var test_board := board.clone()
+            var rules := GoRules.new()
             var result := rules.play_move(test_board, row, col, color)
             if not result.valid:
                 continue
