@@ -104,7 +104,6 @@ func get_level() -> String:
 
 # ============================================================
 class _MctsNode:
-	var _board: Board
 	var _move: Vector2i
 	var _parent: _MctsNode
 	var _children: Array
@@ -112,7 +111,7 @@ class _MctsNode:
 	var _visits: int = 0
 	var _wins: float = 0.0
 
-	func _init(board: Board, move: Vector2i, parent: _MctsNode) -> void:
+	func _init(_board: Board, move: Vector2i, parent: _MctsNode) -> void:
 		_move = move
 		_parent = parent
 		_children = []

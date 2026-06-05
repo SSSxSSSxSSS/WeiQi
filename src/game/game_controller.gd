@@ -26,7 +26,7 @@ var _board_size: int = 19
 var _restart_button: Button
 var _sound: SoundManager
 var _ai_thread: Thread
-var _ai_move_result: Vector2i
+
 
 func _ready() -> void:
 	randomize()
@@ -274,7 +274,7 @@ func _enter_ai_turn() -> void:
 	_history.append(_board.clone())
 	if _ai is AiMcts:
 		_ai_thread = Thread.new()
-		_ai_thread.start(_thread_compute.bind(_board.clone(), _ai_color, (_ai as AiMcts)._simulations))
+		_ai_thread.start(_thread_compute.bind(_board.clone(), _ai_color, (_ai as AiMcts).simulations))
 	else:
 		call_deferred("_do_ai_move")
 
