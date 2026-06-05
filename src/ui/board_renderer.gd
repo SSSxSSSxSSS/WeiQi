@@ -5,8 +5,6 @@ extends Node2D
 const CELL_SIZE := 36
 const BOARD_PADDING := 40
 const STONE_RADIUS := 16
-const BOARD_SIZE_PX := CELL_SIZE * (Board.SIZE - 1)
-const DESIGN_SIZE := BOARD_PADDING * 2 + BOARD_SIZE_PX  # 728
 
 var _board: Board
 var _last_move: Vector2i = Vector2i(-1, -1)
@@ -23,12 +21,14 @@ func _ready() -> void:
 
 func _update_scale_and_position() -> void:
 	var vs: Vector2 = get_viewport().get_visible_rect().size
-	_scale = minf(vs.x, vs.y) / float(DESIGN_SIZE)
-	_scale = maxf(_scale, 0.5)  # 最小缩放 0.5
-	position = (vs - Vector2(DESIGN_SIZE * _scale, DESIGN_SIZE * _scale)) / 2.0
+	var design_size: int = BOARD_PADDING * 2 + CELL_SIZE * (_board.size - 1)
+	_scale = minf(vs.x, vs.y) / float(design_size)
+	_scale = maxf(_scale, 0.5)
+	position = (vs - Vector2(design_size * _scale, design_size * _scale)) / 2.0
 
 func set_board(board: Board) -> void:
 	_board = board
+	_update_scale_and_position()
 	queue_redraw()
 
 func set_last_move(pos: Vector2i) -> void:
@@ -39,30 +39,32 @@ func grid_to_pixel(row: int, col: int) -> Vector2:
 	return Vector2(BOARD_PADDING + col * CELL_SIZE, BOARD_PADDING + row * CELL_SIZE)
 
 func pixel_to_grid(screen_pos: Vector2) -> Vector2i:
-	# screen_pos 是 viewport 全局坐标，需减去 Node2D position 再除以缩放
 	var local: Vector2 = (screen_pos - position) / _scale
 	var col: int = int(round((local.x - BOARD_PADDING) / float(CELL_SIZE)))
 	var row: int = int(round((local.y - BOARD_PADDING) / float(CELL_SIZE)))
-	if row < 0 or row >= Board.SIZE or col < 0 or col >= Board.SIZE:
+	if row < 0 or row >= _board.size or col < 0 or col >= _board.size:
 		return Vector2i(-1, -1)
 	return Vector2i(row, col)
 
 func _draw() -> void:
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2(_scale, _scale))
-	_draw_board()
+	var board_px: int = CELL_SIZE * (_board.size - 1)
+	_draw_board(board_px)
 	_draw_star_points()
 	_draw_stones()
 	_draw_last_move_marker()
 
-func _draw_board() -> void:
-	var total_size: int = BOARD_PADDING * 2 + BOARD_SIZE_PX
+func _draw_board(board_px: int) -> void:
+	var total_size: int = BOARD_PADDING * 2 + board_px
 	draw_rect(Rect2(0, 0, total_size, total_size), Color(0.855, 0.722, 0.49))
-	for i in Board.SIZE:
+	for i in _board.size:
 		var offset: int = BOARD_PADDING + i * CELL_SIZE
-		draw_line(Vector2(BOARD_PADDING, offset), Vector2(BOARD_PADDING + BOARD_SIZE_PX, offset), Color.BLACK, 1.0)
-		draw_line(Vector2(offset, BOARD_PADDING), Vector2(offset, BOARD_PADDING + BOARD_SIZE_PX), Color.BLACK, 1.0)
+		draw_line(Vector2(BOARD_PADDING, offset), Vector2(BOARD_PADDING + board_px, offset), Color.BLACK, 1.0)
+		draw_line(Vector2(offset, BOARD_PADDING), Vector2(offset, BOARD_PADDING + board_px), Color.BLACK, 1.0)
 
 func _draw_star_points() -> void:
+	if _board.size != 19:
+		return  # 星位仅 19 路棋盘
 	var stars: Array[Vector2i] = [
 		Vector2i(3,3), Vector2i(3,9), Vector2i(3,15),
 		Vector2i(9,3), Vector2i(9,9), Vector2i(9,15),
@@ -72,8 +74,8 @@ func _draw_star_points() -> void:
 		draw_circle(grid_to_pixel(s.x, s.y), 4, Color.BLACK)
 
 func _draw_stones() -> void:
-	for row in Board.SIZE:
-		for col in Board.SIZE:
+	for row in _board.size:
+		for col in _board.size:
 			var stone: Stone.Type = _board.get_stone(row, col)
 			if stone == Stone.Type.EMPTY:
 				continue
