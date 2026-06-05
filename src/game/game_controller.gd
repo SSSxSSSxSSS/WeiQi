@@ -51,14 +51,14 @@ func _create_ui() -> void:
     _color_panel.size = Vector2(200, 120)
     add_child(_color_panel)
 
-    var black_btn := Button.new()
+    var black_btn: Button = Button.new()
     black_btn.text = "执黑先手"
     black_btn.position = Vector2(20, 20)
     black_btn.size = Vector2(160, 35)
     black_btn.pressed.connect(_on_color_black)
     _color_panel.add_child(black_btn)
 
-    var white_btn := Button.new()
+    var white_btn: Button = Button.new()
     white_btn.text = "执白后手"
     white_btn.position = Vector2(20, 65)
     white_btn.size = Vector2(160, 35)
@@ -72,21 +72,21 @@ func _create_ui() -> void:
     _difficulty_panel.visible = false
     add_child(_difficulty_panel)
 
-    var easy_btn := Button.new()
+    var easy_btn: Button = Button.new()
     easy_btn.text = "简单（随机）"
     easy_btn.position = Vector2(20, 20)
     easy_btn.size = Vector2(160, 35)
     easy_btn.pressed.connect(_on_difficulty_easy)
     _difficulty_panel.add_child(easy_btn)
 
-    var normal_btn := Button.new()
+    var normal_btn: Button = Button.new()
     normal_btn.text = "普通（启发式）"
     normal_btn.position = Vector2(20, 60)
     normal_btn.size = Vector2(160, 35)
     normal_btn.pressed.connect(_on_difficulty_normal)
     _difficulty_panel.add_child(normal_btn)
 
-    var hard_btn := Button.new()
+    var hard_btn: Button = Button.new()
     hard_btn.text = "困难（启发式+）"
     hard_btn.position = Vector2(20, 100)
     hard_btn.size = Vector2(160, 35)
@@ -156,10 +156,10 @@ func _enter_player_turn() -> void:
 func _on_board_clicked(pos: Vector2) -> void:
     if _state != State.PLAYER_TURN:
         return
-    var grid := _board_renderer.pixel_to_grid(pos)
+    var grid: Vector2i = _board_renderer.pixel_to_grid(pos)
     if grid == Vector2i(-1, -1):
         return
-    var result := _rules.play_move(_board, grid.x, grid.y, _player_color)
+    var result: MoveResult = _rules.play_move(_board, grid.x, grid.y, _player_color)
     if not result.valid:
         _hud_label.text = "无效落子: %s" % result.reason
         return
@@ -186,7 +186,7 @@ func _enter_ai_turn() -> void:
     _pass_button.visible = false
     _hud_label.text = "AI 思考中（%s - %s）..." % [_ai.get_name(), _ai.get_level()]
     await get_tree().process_frame
-    var move := _ai.get_move(_board, _ai_color)
+    var move: Vector2i = _ai.get_move(_board, _ai_color)
     if move == Vector2i(-1, -1):
         _rules.do_pass()
         _consecutive_passes += 1
@@ -203,8 +203,8 @@ func _enter_ai_turn() -> void:
 func _end_game() -> void:
     _state = State.GAME_OVER
     _pass_button.visible = false
-    var score := GoScoring.score(_board, _komi)
-    var winner_text := "黑胜" if score["winner"] == Stone.Type.BLACK else "白胜"
+    var score: Dictionary = GoScoring.score(_board, _komi)
+    var winner_text: String = "黑胜" if score["winner"] == Stone.Type.BLACK else "白胜"
     _game_over_label.text = "游戏结束！%s\n黑: %.1f  白: %.1f (贴目 %.1f)" % [
         winner_text, score["black_score"], score["white_score"], _komi
     ]

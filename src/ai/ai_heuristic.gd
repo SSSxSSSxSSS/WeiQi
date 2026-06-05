@@ -12,7 +12,7 @@ func _init(level: Level = Level.NORMAL) -> void:
 ## 对所有合法落子打分，返回最高分位置
 func get_move(board: Board, color: Stone.Type) -> Vector2i:
     var candidates: Array[Dictionary] = []  # [{pos, score}]
-    var opponent := Stone.opponent(color)
+    var opponent: Stone.Type = Stone.opponent(color)
 
     for row in Board.SIZE:
         for col in Board.SIZE:
@@ -22,7 +22,7 @@ func get_move(board: Board, color: Stone.Type) -> Vector2i:
             if not result.valid:
                 continue
 
-            var score := 0.0
+            var score: float = 0.0
             # 角位置 +10
             if (row == 0 or row == 18) and (col == 0 or col == 18):
                 score += 10.0
@@ -40,14 +40,14 @@ func get_move(board: Board, color: Stone.Type) -> Vector2i:
             # 困难难度加成
             if _level == Level.HARD:
                 # 落子后己方棋组只剩 1 气 → 危险
-                var my_group := StoneGroup.build_group(test_board, Vector2i(row, col))
+                var my_group: Dictionary = StoneGroup.build_group(test_board, Vector2i(row, col))
                 if my_group["liberties"].size() <= 1:
                     score -= 20.0
                 # 对方棋组被逼只剩 1 气 +15
                 for nb in test_board.get_neighbors(row, col):
-                    var nb_stone := test_board.get_stone(nb.x, nb.y)
+                    var nb_stone: Stone.Type = test_board.get_stone(nb.x, nb.y)
                     if nb_stone == opponent:
-                        var opp_group := StoneGroup.build_group(test_board, nb)
+                        var opp_group: Dictionary = StoneGroup.build_group(test_board, nb)
                         if opp_group["liberties"].size() == 1:
                             score += 15.0
 
@@ -57,7 +57,7 @@ func get_move(board: Board, color: Stone.Type) -> Vector2i:
         return Vector2i(-1, -1)
 
     # 选最高分
-    var best := candidates[0]
+    var best: Dictionary = candidates[0]
     for c in candidates:
         if c["score"] > best["score"]:
             best = c
