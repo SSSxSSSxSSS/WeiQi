@@ -23,6 +23,7 @@ var _pass_button: Button
 var _undo_button: Button
 var _history: Array[Board] = []
 var _board_size: int = 19
+var _restart_button: Button
 
 func _ready() -> void:
 	randomize()
@@ -129,6 +130,15 @@ func _create_ui() -> void:
 	_undo_button.visible = false
 	_undo_button.pressed.connect(_on_undo)
 	add_child(_undo_button)
+
+	# 重新开始按钮（初始隐藏）
+	_restart_button = Button.new()
+	_restart_button.text = "重新开始"
+	_restart_button.position = Vector2(400, 420)
+	_restart_button.size = Vector2(160, 40)
+	_restart_button.visible = false
+	_restart_button.pressed.connect(_on_restart)
+	add_child(_restart_button)
 
 func _enter_color_select() -> void:
 	_state = State.COLOR_SELECT
@@ -257,6 +267,7 @@ func _end_game() -> void:
 		winner_text, score["black_score"], score["white_score"], _komi
 	]
 	_game_over_label.visible = true
+	_restart_button.visible = true
 	_hud_label.text = "游戏结束"
 
 func _on_undo() -> void:
@@ -269,6 +280,11 @@ func _on_undo() -> void:
 	_board_renderer.queue_redraw()
 	_undo_button.visible = not _history.is_empty()
 	_hud_label.text = "已悔棋"
+
+func _on_restart() -> void:
+	_restart_button.visible = false
+	_game_over_label.visible = false
+	_enter_color_select()
 
 func _update_hud() -> void:
 	_hud_label.text = "%s - %s 难度" % [
