@@ -12,6 +12,12 @@ func play_move(board: Board, row: int, col: int, color: Stone.Type) -> MoveResul
     # 占位检测
     if board.get_stone(row, col) != Stone.Type.EMPTY:
         return MoveResult.new(false, [], "occupied")
+
+    # 劫检测：落子前局面哈希等于上一手记录则重复
+    var pre_hash: int = _hash_board(board)
+    if pre_hash == _ko_hash and _ko_hash != -1:
+        return MoveResult.new(false, [], "ko")
+
     # 保存棋盘副本（自杀检测需要还原）
     var board_copy: Board = board.clone()
 
@@ -38,4 +44,22 @@ func play_move(board: Board, row: int, col: int, color: Stone.Type) -> MoveResul
                 board.set_stone(r, c, board_copy.get_stone(r, c))
         return MoveResult.new(false, [], "suicide")
 
+    _ko_hash = pre_hash
     return MoveResult.new(true, captured, "")
+
+## Pass：不修改棋盘，清除劫记录
+func do_pass() -> void:
+    _ko_hash = -1
+
+## 连续 pass 两次则终局
+func is_game_over(consecutive_passes: int) -> bool:
+    return consecutive_passes >= 2
+
+## 简单多项式哈希——只算棋子位置，忽略空位顺序
+func _hash_board(board: Board) -> int:
+    var h: int = 0
+    for row in Board.SIZE:
+        for col in Board.SIZE:
+            var s: int = board.get_stone(row, col)
+            h = (h * 31 + s) & 0x7FFFFFFF
+    return h
