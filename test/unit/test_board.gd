@@ -27,8 +27,8 @@ extends GutTest
 # ------------------------------------------------------------
 func test_board_init_all_empty():
 	var board = Board.new()
-	for row in Board.SIZE:
-		for col in Board.SIZE:
+	for row in board.size:
+		for col in board.size:
 			assert_eq(board.get_stone(row, col), Stone.Type.EMPTY,
 				"位置 (%d,%d) 应为空" % [row, col])
 

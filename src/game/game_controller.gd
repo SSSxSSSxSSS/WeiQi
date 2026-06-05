@@ -176,6 +176,7 @@ func _on_difficulty_hard() -> void:
 	_start_game()
 
 func _start_game() -> void:
+	_size_panel.visible = false
 	_difficulty_panel.visible = false
 	_board = Board.new(_board_size)
 	_rules = GoRules.new()

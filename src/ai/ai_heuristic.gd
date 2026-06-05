@@ -14,8 +14,8 @@ func get_move(board: Board, color: Stone.Type) -> Vector2i:
     var candidates: Array[Dictionary] = []  # [{pos, score}]
     var opponent: Stone.Type = Stone.opponent(color)
 
-    for row in Board.SIZE:
-        for col in Board.SIZE:
+    for row in board.size:
+        for col in board.size:
             var test_board: Board = board.clone()
             var rules: GoRules = GoRules.new()
             var result: MoveResult = rules.play_move(test_board, row, col, color)

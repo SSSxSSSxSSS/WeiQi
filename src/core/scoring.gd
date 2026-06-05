@@ -5,16 +5,16 @@ extends RefCounted
 ## 中国规则计分，返回 { black_score, white_score, winner }
 static func score(board: Board, komi: float = 7.5) -> Dictionary:
     var visited: Array[Array] = []
-    for row in Board.SIZE:
+    for row in board.size:
         visited.append([])
-        for _col in Board.SIZE:
+        for _col in board.size:
             visited[row].append(false)
 
     var black_score: float = 0.0
     var white_score: float = 0.0
 
-    for row in Board.SIZE:
-        for col in Board.SIZE:
+    for row in board.size:
+        for col in board.size:
             var stone: Stone.Type = board.get_stone(row, col)
             if stone == Stone.Type.BLACK:
                 black_score += 1.0

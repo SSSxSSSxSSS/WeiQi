@@ -39,8 +39,8 @@ func play_move(board: Board, row: int, col: int, color: Stone.Type) -> MoveResul
     var my_group: Dictionary = StoneGroup.build_group(board, Vector2i(row, col))
     if my_group["liberties"].size() == 0 and captured.size() == 0:
         # 还原棋盘
-        for r in Board.SIZE:
-            for c in Board.SIZE:
+        for r in board.size:
+            for c in board.size:
                 board.set_stone(r, c, board_copy.get_stone(r, c))
         return MoveResult.new(false, [], "suicide")
 
@@ -58,8 +58,8 @@ func is_game_over(consecutive_passes: int) -> bool:
 ## 简单多项式哈希——只算棋子位置，忽略空位顺序
 func _hash_board(board: Board) -> int:
     var h: int = 0
-    for row in Board.SIZE:
-        for col in Board.SIZE:
+    for row in board.size:
+        for col in board.size:
             var s: int = board.get_stone(row, col)
             h = (h * 31 + s) & 0x7FFFFFFF
     return h

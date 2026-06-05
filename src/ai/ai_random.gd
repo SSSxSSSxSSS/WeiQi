@@ -5,8 +5,8 @@ extends AiBase
 ## 从所有合法落子中随机选一个，无合法落子则 pass
 func get_move(board: Board, color: Stone.Type) -> Vector2i:
     var candidates: Array[Vector2i] = []
-    for row in Board.SIZE:
-        for col in Board.SIZE:
+    for row in board.size:
+        for col in board.size:
             var test_board: Board = board.clone()
             var rules: GoRules = GoRules.new()
             var result: MoveResult = rules.play_move(test_board, row, col, color)
