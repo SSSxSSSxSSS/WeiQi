@@ -33,6 +33,8 @@ func _ready() -> void:
 	add_child(_board_renderer)
 	_board_renderer.board_clicked.connect(_on_board_clicked)
 	_create_ui()
+	_center_ui()
+	get_tree().root.size_changed.connect(_center_ui)
 	_enter_color_select()
 
 func _create_ui() -> void:
@@ -280,6 +282,17 @@ func _on_undo() -> void:
 	_board_renderer.queue_redraw()
 	_undo_button.visible = not _history.is_empty()
 	_hud_label.text = "已悔棋"
+
+func _center_ui() -> void:
+	var vs: Vector2 = get_viewport().get_visible_rect().size
+	var cx: float = vs.x / 2.0
+	var cy: float = vs.y / 2.0
+
+	_color_panel.position = Vector2(cx - 100, cy - 60)
+	_size_panel.position = Vector2(cx - 100, cy - 77)
+	_difficulty_panel.position = Vector2(cx - 100, cy - 77)
+	_game_over_label.position = Vector2(cx - 200, cy - 60)
+	_restart_button.position = Vector2(cx - 80, cy + 40)
 
 func _on_restart() -> void:
 	_restart_button.visible = false
