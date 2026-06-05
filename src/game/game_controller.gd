@@ -118,6 +118,14 @@ func _create_ui() -> void:
 	hard_btn.pressed.connect(_on_difficulty_hard)
 	_difficulty_panel.add_child(hard_btn)
 
+	var mcts_btn: Button = Button.new()
+	mcts_btn.text = "困难+（MCTS）"
+	mcts_btn.position = Vector2(20, 140)
+	mcts_btn.size = Vector2(160, 35)
+	mcts_btn.pressed.connect(_on_difficulty_mcts)
+	_difficulty_panel.add_child(mcts_btn)
+	_difficulty_panel.size.y = 195
+
 	# Pass 按钮（初始隐藏）
 	_pass_button = Button.new()
 	_pass_button.text = "Pass"
@@ -194,6 +202,11 @@ func _on_difficulty_normal() -> void:
 func _on_difficulty_hard() -> void:
 	_sound.play_click()
 	_ai = AiHeuristic.new(AiHeuristic.Level.HARD)
+	_start_game()
+
+func _on_difficulty_mcts() -> void:
+	_sound.play_click()
+	_ai = AiMcts.new(500 if _board_size >= 13 else 1000)
 	_start_game()
 
 func _start_game() -> void:
